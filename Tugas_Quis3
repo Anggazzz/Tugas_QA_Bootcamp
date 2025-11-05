@@ -1,0 +1,147 @@
+/// <reference types="cypress" />
+
+
+describe('Testing Fitur Login OrangeHRM', () => {
+  
+  beforeEach(() => {
+      cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+    
+      cy.url().should('include', '/auth/login');
+  });
+
+ 
+  const validUser = 'Admin';
+  const validPass = 'admin123';
+
+  it('TC_001. User berhasil login menggunakan kredensial yang valid', () => {
+      cy.get('input[name="username"]', { timeout: 8000 }).type(validUser);
+      cy.get('input[name="password"]', { timeout: 8000 }).type(validPass);
+      cy.get('button[type="submit"]').click();
+
+   
+      cy.url().should('include', '/dashboard');
+      cy.contains('Dashboard').should('be.visible');
+  });
+
+
+  it('TC_002. Gagal Login: Username dikosongkan (Password Valid)', () => {
+      cy.get('input[name="password"]', { timeout: 8000 }).type(validPass); 
+      cy.get('button[type="submit"]').click();
+
+    
+      cy.get('.oxd-input-field-error-message').eq(0).should('contain', 'Required');
+  });
+
+  it('TC_003. Gagal Login: Password dikosongkan (Username Valid)', () => {
+      cy.get('input[name="username"]', { timeout: 8000 }).type(validUser);
+      cy.get('button[type="submit"]').click();
+
+      
+      cy.get('.oxd-input-field-error-message').eq(0).should('contain', 'Required');
+  });
+
+  it('TC_004. Gagal Login: Username dan Password dikosongkan', () => {
+      cy.get('button[type="submit"]', { timeout: 8000 }).click(); 
+
+    
+      cy.get('.oxd-input-field-error-message').eq(0).should('contain', 'Required');
+      cy.get('.oxd-input-field-error-message').eq(0).should('contain', 'Required');
+      });
+
+
+  it('TC_005. Gagal Login: Username salah, Password benar', () => {
+      cy.get('input[name="username"]', { timeout: 8000 }).type('wronguser');
+      cy.get('input[name="password"]',  { timeout: 8000 }).type(validPass);
+      cy.get('button[type="submit"]').click();
+
+      cy.get('.oxd-alert-content-text').should('contain', 'Invalid credentials');
+      cy.url().should('include', '/auth/login');
+  });
+
+  it('TC_006. Gagal Login: Username benar, Password salah', () => {
+      cy.get('input[name="username"]',  { timeout: 8000 }).type(validUser);
+      cy.get('input[name="password"]',  { timeout: 8000 }).type('wrongpass');
+      cy.get('button[type="submit"]').click();
+
+      
+      cy.get('.oxd-alert-content-text').should('contain', 'Invalid credentials');
+  });
+
+  it('TC_007. Gagal Login: Username dan Password salah', () => {
+      cy.get('input[name="username"]', { timeout: 8000 }).type('wronguser');
+      cy.get('input[name="password"]',  { timeout: 8000 }).type('wrongpass');
+      cy.get('button[type="submit"]').click();
+
+      cy.get('.oxd-alert-content-text').should('contain', 'Invalid credentials');
+  });
+
+
+it('TC_008: [UI/UX] Tampilan Dinamis Minimize (Responsivitas)', () => {
+    
+  cy.log('Langkah 1: Verifikasi tampilan default (Desktop)');
+
+  cy.get('.orangehrm-login-container').should('be.visible');
+
+  cy.log('Langkah 2: Mengubah viewport ke ukuran ponsel (Simulasi Minimize)');
+  
+  cy.viewport('iphone-6'); 
+  
+  cy.log('Verifikasi 1: Form Login tetap terlihat dan responsif pada ukuran mobile');
+ 
+  cy.get('.orangehrm-login-container').should('exist'); 
+
+
+  cy.log('Langkah 3: Mengubah viewport kembali ke desktop');
+  cy.viewport(1280, 720); 
+  
+  cy.log('Verifikasi 2: Tampilan kembali normal');
+  cy.get('.orangehrm-login-container').should('be.visible');
+});
+ 
+
+  it('TC_009. Gagal Login: Menggunakan payload SQL Injection', () => {
+      const sqlPayload = "' OR 1=1 --";
+      cy.get('input[name="username"]',  { timeout: 8000 }).type(sqlPayload);
+      cy.get('input[name="password"]',  { timeout: 8000 }).type('randompass');
+      cy.get('button[type="submit"]').click();
+
+      
+      cy.get('.oxd-alert-content-text').should('contain', 'Invalid credentials');
+  });
+
+
+  it('TC_010. User berhasil login dengan password mengandung karakter khusus (asumsi sistem mendukung)', () => {
+     
+      cy.get('input[name="username"]',  { timeout: 8000 }).type(validUser);
+      cy.get('input[name="password"]',  { timeout: 8000 }) .type(validPass + '!'); 
+      cy.get('input[name="password"]').clear().type(validPass); 
+      cy.get('button[type="submit"]').click();
+
+      cy.url().should('include', '/dashboard');
+  });
+
+
+  it('TC_011. Password Field harus memiliki tipe "password" (masking input)', () => {
+      
+      cy.get('input[name="password"]',  { timeout: 8000 }).should('have.attr', 'type', 'password');
+  });
+
+ 
+  it('TC_012. Gagal Login: Batas Karakter Username (Input sangat panjang)', () => {
+      const longText = 'a'.repeat(300);
+      cy.get('input[name="username"]',  { timeout: 8000 }).type(longText);
+      cy.get('input[name="password"]',  { timeout: 8000 }).type(validPass);
+      cy.get('button[type="submit"]').click();
+
+      
+      cy.get('.oxd-alert-content-text').should('exist');
+  });
+
+  it('TC_0013. Gagal Login: Menggunakan angka untuk Username (Jika Username hanya menerima string)', () => {
+      cy.get('input[name="username"]',  { timeout: 8000 }).type('123456');
+      cy.get('input[name="password"]',  { timeout: 8000 }).type(validPass);
+      cy.get('button[type="submit"]').click();
+
+      cy.get('.oxd-alert-content-text').should('contain', 'Invalid credentials');
+  });
+});

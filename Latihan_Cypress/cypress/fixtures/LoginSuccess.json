@@ -1,0 +1,11 @@
+{
+    "token": "dummy-token-12345",
+    "empNumber": 7,
+    "user": {
+      "empNumber": 7,
+      "firstName": "Angga",
+      "lastName": "Prawira",
+      "middleName": "",
+      "userName": "Admin"
+    }
+  }
